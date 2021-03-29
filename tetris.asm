@@ -12,25 +12,25 @@ title (exe) Graphics System Calls
     
     ; vertical rectangle
     
-    start_col_rec_v dw 50
+    start_col_rec_v dw 100
     start_row_rec_v dw 0 
     finish_row_rec_v dw 20
-    finish_col_rec_v dw 130
+    finish_col_rec_v dw 180
     
     ; horizontal rectangle
     
     start_col_rec_h dw 100
     start_row_rec_h dw 0
     finish_row_rec_h dw 20
-    finish_col_rec_h dw 180
+    finish_col_rec_h dw 0
     
     ;*****************************
     ;**********SQUARE*************
     
+    start_col_sq dw 100
     start_row_sq dw 0
-    start_col_sq dw 50
+    finish_col_sq dw 140
     finish_row_sq dw 40
-    finish_col_sq dw 90
     
     ;*****************************
     ;**********LBlOCK*************
@@ -49,11 +49,20 @@ MAIN PROC FAR
     MOV AX, @DATA
     MOV DS, AX
     
-    CALL CLEAR_SCREEN   
+    CALL clear_screen   
     CALL set_graphic_mode
-    CALL start_game  
     CALL draw_init_score
-    call hd
+    call draw_square
+    
+myLoop:
+    call shift_shape
+    call clear_screen
+    call fall_delay
+    cmp finish_row_sq, 200
+    jnz myLoop
+      
+
+
                         
     
 
@@ -66,7 +75,7 @@ EXIT:
 
 ;*****************
 
-CLEAR_SCREEN PROC    
+clear_screen PROC    
     
     MOV AL, 06H       ;scroll up
     MOV BH, 00H
@@ -76,7 +85,7 @@ CLEAR_SCREEN PROC
     
     RET
    
-ENDP CLEAR_SCREEN        
+ENDP clear_screen        
 
 ;******************
 
@@ -95,19 +104,7 @@ set_graphic_mode proc ; change color for a single pixel, set graphics video mode
     
 endp set_graphic_mode
 
-;******************
-
-start_game proc
-    
-    call draw_rectangle_vertical  
-    call draw_square
-    ;call draw_rectangle_horizontal
-    
-    ret
-endp start_game
-
-;******************    
-
+;******************   
 draw_rectangle_vertical proc
     
     MOV AL, 1        ;set color blue
@@ -157,9 +154,9 @@ endp draw_rectangle_horizontal
 ;******************   TODO        
                    
 draw_square proc 
-    
+                 
+    MOV AH, 0ch                 
     MOV AL, 1110b
-    MOV AH, 0ch
     
     MOV DX, start_row_sq
     
@@ -203,10 +200,34 @@ endp z_block
 
 ;******************  
 
-shape_shift proc
+shift_shape proc
+    
+    MOV AH, 0CH
+    MOV AL, 0
+    MOV DX, start_row_sq
+    MOV CX, start_col_sq
+
+shift_loop1:
+    INT 10h
+    INC DX
+    CMP DX, finish_row_sq
+    JNZ shift_loop1
+    
+    MOV AL, 0010b
+    MOV CX, start_col_sq
+    MOV DX, finish_row_sq
+    
+shift_loop2:
+    INT 10H
+    INC CX
+    CMP CX, finish_col_sq
+    JNZ shift_loop2
+    
+    INC start_row_sq
+    INC finish_row_sq
     
     ret
-endp shape_shift
+endp shift_shape
 
 ;******************
                        
@@ -233,6 +254,17 @@ hd proc
     ret
 endp hd
         
+;*********************
+
+fall_delay proc
+    
+    MOV CX, 4FFFH
+
+delay_loop:      
+    LOOP delay_loop
+    ret
+endp fall_delay
+
 ;*********************
 ENDP MAIN
 
