@@ -38,7 +38,10 @@ title (exe) Graphics System Calls
     start_row_l dw 50
     
     init_score dw '0'    
-    init_score_hd dw '0'
+    init_score_hd dw '0'  
+    
+    seconds db ?
+    buf db 6 dup(?)
     
 
 .code
@@ -50,7 +53,7 @@ MAIN PROC FAR
     CALL clear_screen   
     CALL set_graphic_mode
     CALL draw_init_score
-    call draw_square
+    call draw_square  
     
 main_loop:   
     call choose_random_shape 
