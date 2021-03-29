@@ -205,8 +205,8 @@ shift_shape proc
 
 shift_loop1:
     INT 10h  
-    INC DX
-    CMP DX, finish_row_sq
+    INC CX
+    CMP CX, finish_col_sq
     JNZ shift_loop1
     
     MOV AL, 1110b
