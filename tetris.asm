@@ -54,7 +54,8 @@ MAIN PROC FAR
     CALL draw_init_score
     call draw_square
     
-myLoop:
+myLoop:        
+    call choose_random_shape 
     call shift_shape
     call clear_screen
     call fall_delay
@@ -94,11 +95,6 @@ set_graphic_mode proc ; change color for a single pixel, set graphics video mode
     MOV AL, 13H
     MOV AH, 0
     INT 10H
-    MOV AL, 1110B
-    MOV CX, 0
-    MOV DX, 20
-    MOV AH, 0CH
-    INT 10H           ; set pixel
     
     ret
     
@@ -208,12 +204,12 @@ shift_shape proc
     MOV CX, start_col_sq
 
 shift_loop1:
-    INT 10h
+    INT 10h  
     INC DX
     CMP DX, finish_row_sq
     JNZ shift_loop1
     
-    MOV AL, 0010b
+    MOV AL, 1110b
     MOV CX, start_col_sq
     MOV DX, finish_row_sq
     
@@ -264,6 +260,20 @@ delay_loop:
     LOOP delay_loop
     ret
 endp fall_delay
+
+;*********************
+
+choose_random_shape proc
+    
+    mov ax, dx
+    xor dx, dx
+    mov cx, 10
+    div cx
+     ; result of random number between 0 to 9.
+    
+    ret
+    
+endp choose_random_shape
 
 ;*********************
 ENDP MAIN
