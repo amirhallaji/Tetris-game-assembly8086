@@ -14,30 +14,28 @@ title (exe) Graphics System Calls
     
     start_col_rec_v dw 100
     start_row_rec_v dw 0 
-    finish_row_rec_v dw 20
-    finish_col_rec_v dw 180
+    finish_row_rec_v dw 10
+    finish_col_rec_v dw 140
     
     ; horizontal rectangle
     
     start_col_rec_h dw 100
     start_row_rec_h dw 0
-    finish_row_rec_h dw 20
-    finish_col_rec_h dw 0
+    finish_row_rec_h dw 10
+    finish_col_rec_h dw 140
     
     ;*****************************
     ;**********SQUARE*************
     
-    start_col_sq dw 100
+    start_col_sq dw 140
     start_row_sq dw 0
-    finish_col_sq dw 140
-    finish_row_sq dw 40
+    finish_col_sq dw 160
+    finish_row_sq dw 20
     
     ;*****************************
     ;**********LBlOCK*************
     
     start_row_l dw 50
-                     
-    
     
     init_score dw '0'    
     init_score_hd dw '0'
@@ -54,20 +52,22 @@ MAIN PROC FAR
     CALL draw_init_score
     call draw_square
     
-myLoop:        
+main_loop:   
     call choose_random_shape 
-    call shift_shape
-    call clear_screen
+    call shift_down_sq      
+    ;call check_input
     call fall_delay
     cmp finish_row_sq, 200
-    jnz myLoop
-      
-
-
-                        
+    jnz main_loop 
     
-
-
+loop2:
+    
+    call draw_rectangle_vertical
+    call shift_down_rectangle
+    call fall_delay
+    cmp finish_row_rec_v, 200
+    jnz loop2        
+    
 
 EXIT:      
     MOV AX, 4C00H
@@ -103,7 +103,7 @@ endp set_graphic_mode
 ;******************   
 draw_rectangle_vertical proc
     
-    MOV AL, 1        ;set color blue
+    MOV AL, 1001b  ;set color blue
     MOV AH, 0CH
    
     MOV CX, start_col_rec_v 
@@ -123,31 +123,7 @@ rec_v_loop2:
     ret
 endp draw_rectangle_vertical
 
-;******************
-
-draw_rectangle_horizontal proc
-    
-    MOV AL, 1001B ; set color light blue
-    MOV AH, 0CH                         
-    
-    MOV DX, start_row_rec_h
-rec_h_loop1:
-    MOV CX, start_col_rec_h
-                 
-rec_h_loop2:
-    INT 10H
-    INC CX
-    CMP CX, finish_col_rec_h
-    JNZ rec_h_loop2
-    
-    INC DX
-    CMP DX, finish_row_rec_h
-    JNZ rec_h_loop1
-    
-    ret
-endp draw_rectangle_horizontal
-                    
-;******************   TODO        
+;******************       
                    
 draw_square proc 
                  
@@ -196,34 +172,67 @@ endp z_block
 
 ;******************  
 
-shift_shape proc
+shift_down_sq proc
     
     MOV AH, 0CH
     MOV AL, 0
     MOV DX, start_row_sq
     MOV CX, start_col_sq
 
-shift_loop1:
+shift_down_sq_loop1:
     INT 10h  
     INC CX
     CMP CX, finish_col_sq
-    JNZ shift_loop1
+    JNZ shift_down_sq_loop1
     
     MOV AL, 1110b
     MOV CX, start_col_sq
     MOV DX, finish_row_sq
     
-shift_loop2:
+shift_down_sq_loop2:
     INT 10H
     INC CX
     CMP CX, finish_col_sq
-    JNZ shift_loop2
+    JNZ shift_down_sq_loop2
     
     INC start_row_sq
     INC finish_row_sq
     
     ret
-endp shift_shape
+endp shift_down_sq
+
+;******************
+
+shift_down_rectangle proc
+    
+    MOV AH, 0CH
+    MOV AL, 0
+    MOV DX, start_row_rec_v
+    MOV CX, start_col_rec_v
+
+shift_down_rec_loop1:
+    INT 10h  
+    INC CX
+    CMP CX, finish_col_rec_v
+    JNZ shift_down_rec_loop1
+    
+    MOV AL, 1001b
+    MOV CX, start_col_rec_v
+    MOV DX, finish_row_rec_v
+    
+shift_down_rec_loop2:
+    INT 10H
+    INC CX
+    CMP CX, finish_col_rec_v
+    JNZ shift_down_rec_loop2
+    
+    INC start_row_rec_v
+    INC finish_row_rec_v
+    
+        
+    
+    ret
+endp shift_down_rectangle 
 
 ;******************
                        
@@ -254,7 +263,7 @@ endp hd
 
 fall_delay proc
     
-    MOV CX, 4FFFH
+    MOV CX, 9FFFH
 
 delay_loop:      
     LOOP delay_loop
@@ -274,6 +283,19 @@ choose_random_shape proc
     ret
     
 endp choose_random_shape
+
+;*********************
+
+check_input proc
+    
+    mov ah, 00
+    int 16h
+    
+    cmp al,100
+    call shift_down_rectangle
+    
+    ret
+endp check_input 
 
 ;*********************
 ENDP MAIN
