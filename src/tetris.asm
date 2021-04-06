@@ -34,6 +34,13 @@ title (exe) Graphics System Calls
     
     ;*****************************
     ;**********LBlOCK*************
+
+    ;*****************************
+    ;**********PanjeBox**********
+    start_col_pb dw 100
+    start_row_pb dw 0
+    finish_col_pb dw 
+    ;*****************************
     
     start_row_l dw 50
     
@@ -58,7 +65,7 @@ MAIN PROC FAR
 main_loop:   
     call choose_random_shape 
     call shift_down_sq      
-    ;call check_input
+    ; call check_input
     call fall_delay
     cmp finish_row_sq, 200
     jnz main_loop 
@@ -67,6 +74,7 @@ loop2:
     
     call draw_rectangle_vertical
     call shift_down_rectangle
+    ; call check_input
     call fall_delay
     cmp finish_row_rec_v, 200
     jnz loop2        
@@ -242,7 +250,7 @@ endp shift_down_rectangle
 
 draw_init_score proc
     
-    MOV DL, init_score
+    MOV DL, '0'
     MOV AH, 2
     INT 21h
     
@@ -291,11 +299,12 @@ endp choose_random_shape
 
 check_input proc
     
-    mov ah, 00
+    mov ah, 00h
     int 16h
     
-    cmp al,100
-    call shift_down_rectangle
+    cmp al,'d'
+    call shift_down_rectangle 
+
     
     ret
 endp check_input 
