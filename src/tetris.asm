@@ -4,52 +4,35 @@ title (exe) Graphics System Calls
 .stack64
 
 
-.data                 
+.data 
+
 
     
-    ;*****************************
-    ;********* RECTANGLE**********
-    
-    ; vertical rectangle
-    
-    start_col_rec_v dw 100
-    start_row_rec_v dw 0 
-    finish_row_rec_v dw 10
-    finish_col_rec_v dw 140
-    
-    ; horizontal rectangle
-    
-    start_col_rec_h dw 100
-    start_row_rec_h dw 0
-    finish_row_rec_h dw 10
-    finish_col_rec_h dw 140
-    
-    ;*****************************
     ;**********SQUARE*************
-    
     start_col_sq dw 140
     start_row_sq dw 0
     finish_col_sq dw 160
     finish_row_sq dw 20
     
-    ;*****************************
-    ;**********LBlOCK*************
+    ;********* RECTANGLE**********
+    
+    ; vertical rectangle
+    start_col_rec_v dw 100
+    start_row_rec_v dw 0 
+    finish_row_rec_v dw 10
+    finish_col_rec_v dw 140
 
-    ;*****************************
-    ;**********PanjeBox**********
-    start_col_pb dw 100
-    start_row_pb dw 0
-    finish_col_pb dw 
-    ;*****************************
-    
-    start_row_l dw 50
-    
+
+    ; Score dispalyed.
     init_score dw '0'    
     init_score_hd dw '0'  
     
     seconds db ?
     buf db 6 dup(?)
+
+    random_number db 0
     
+
 
 .code
 
@@ -64,28 +47,19 @@ MAIN PROC FAR
     
 main_loop:   
     call choose_random_shape 
-    call shift_down_sq      
-    ; call check_input
+    call shift_down_shape      
+    call check_input
     call fall_delay
     cmp finish_row_sq, 200
     jnz main_loop 
-    
-loop2:
-    
-    call draw_rectangle_vertical
-    call shift_down_rectangle
-    ; call check_input
-    call fall_delay
-    cmp finish_row_rec_v, 200
-    jnz loop2        
-    
+
 
 EXIT:      
     MOV AX, 4C00H
     INT 21H
     
 
-;*****************
+;********************************************************************************
 
 clear_screen PROC    
     
@@ -99,7 +73,7 @@ clear_screen PROC
    
 ENDP clear_screen        
 
-;******************
+;********************************************************************************
 
 set_graphic_mode proc ; change color for a single pixel, set graphics video mode.
        
@@ -111,7 +85,99 @@ set_graphic_mode proc ; change color for a single pixel, set graphics video mode
     
 endp set_graphic_mode
 
-;******************   
+;********************************************************************************
+
+
+draw_init_score proc
+    
+    MOV DL, '0'
+    MOV AH, 2
+    INT 21h
+    
+    ret
+endp draw_init_score  
+
+;***********************************************************************************
+fall_delay proc
+    
+    MOV CX, 9FFFH
+
+delay_loop:      
+    LOOP delay_loop
+    ret
+endp fall_delay
+
+;***********************************************************************************
+
+
+choose_random_shape proc
+    
+    mov al, byte [random_number]
+    add al, 31
+    mov byte [random_number], al
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ; divide by N and return remainder
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    div bl ; divide by N
+    mov al, ah ; save remainder in al
+    xor ah, ah
+    
+    ret
+
+
+    mov ax, dx
+    xor dx, dx
+    mov cx, 10
+    div cx
+     ; result of random number between 0 to 9.
+    
+    ret
+    
+endp choose_random_shape
+
+;***********************************************************************************
+
+check_input proc
+    
+    mov ah, 00h
+    int 16h
+
+    push ax    
+    mov ah, 6 ; direct console I/O
+    mov dl, 0FFh ; input mode
+    int 21h 
+    pop ax
+    
+    cmp al,'d'
+    je d_key_pressed
+    
+    cmp al, 'D'
+    je d_key_pressed
+
+    cmp al, 'L'
+    je l_key_pressed
+
+    cmp al, 'l'
+    je l_key_pressed
+
+    jne check_input_done
+
+d_key_pressed:
+    call shif_right_shape
+    jmp check_input_done
+
+l_key_pressed:
+    call shift_left_shape
+    jmp check_input_done
+
+
+check_input_done:
+    ret
+endp check_input 
+
+;***********************************************************************************
+
 draw_rectangle_vertical proc
     
     MOV AL, 1001b  ;set color blue
@@ -134,8 +200,8 @@ rec_v_loop2:
     ret
 endp draw_rectangle_vertical
 
-;******************       
-                   
+;********************************************************************************
+
 draw_square proc 
                  
     MOV AH, 0ch                 
@@ -159,31 +225,9 @@ sq_loop2:
     ret
 endp draw_square
 
-;******************   
-                   
-draw_l_block proc 
-    
-    ret
-endp draw_l_block
+;********************************************************************************
 
-;******************
-
-panjebox_block proc
-    
-    ret
-endp panjebox_block
-
-;******************
-
-z_block proc
-    
-    
-    ret
-endp z_block
-
-;******************  
-
-shift_down_sq proc
+shift_down_shape proc
     
     MOV AH, 0CH
     MOV AL, 0
@@ -210,106 +254,20 @@ shift_down_sq_loop2:
     INC finish_row_sq
     
     ret
-endp shift_down_sq
+endp shift_down_shape
+               
+;********************************************************************************
+shift_right_shape proc
 
-;******************
-
-shift_down_rectangle proc
-    
-    MOV AH, 0CH
-    MOV AL, 0
-    MOV DX, start_row_rec_v
-    MOV CX, start_col_rec_v
-
-shift_down_rec_loop1:
-    INT 10h  
-    INC CX
-    CMP CX, finish_col_rec_v
-    JNZ shift_down_rec_loop1
-    
-    MOV AL, 1001b
-    MOV CX, start_col_rec_v
-    MOV DX, finish_row_rec_v
-    
-shift_down_rec_loop2:
-    INT 10H
-    INC CX
-    CMP CX, finish_col_rec_v
-    JNZ shift_down_rec_loop2
-    
-    INC start_row_rec_v
-    INC finish_row_rec_v
-    
-        
-    
     ret
-endp shift_down_rectangle 
+    endp shif_right_shape
 
-;******************
-                       
+;********************************************************************************
+shift_left_shape proc
 
-draw_init_score proc
-    
-    MOV DL, '0'
-    MOV AH, 2
-    INT 21h
-    
     ret
-endp draw_init_score  
+    endp shift_left_shape
 
-;********************
+;********************************************************************************
 
-hd proc
-    MOV DL, init_score_hd
-    MOV AH, 2
-    INT 21H
-    
-    MOV AL, init_score
-    OUT 199, AL 
-    
-    ret
-endp hd
-        
-;*********************
-
-fall_delay proc
-    
-    MOV CX, 9FFFH
-
-delay_loop:      
-    LOOP delay_loop
-    ret
-endp fall_delay
-
-;*********************
-
-choose_random_shape proc
-    
-    mov ax, dx
-    xor dx, dx
-    mov cx, 10
-    div cx
-     ; result of random number between 0 to 9.
-    
-    ret
-    
-endp choose_random_shape
-
-;*********************
-
-check_input proc
-    
-    mov ah, 00h
-    int 16h
-    
-    cmp al,'d'
-    call shift_down_rectangle 
-
-    
-    ret
-endp check_input 
-
-;*********************
 ENDP MAIN
-
-END MAIN
