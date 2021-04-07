@@ -48,7 +48,7 @@ MAIN PROC FAR
 main_loop:   
     call choose_random_shape 
     call shift_down_shape      
-    call check_input
+    call procedure_read_character
     call fall_delay
     cmp finish_row_sq, 200
     jnz main_loop 
@@ -137,6 +137,17 @@ choose_random_shape proc
 endp choose_random_shape
 
 ;***********************************************************************************
+procedure_read_character proc
+
+    mov ah, 1
+    int 16h
+    jnz check_input
+
+    ret
+    endp procedure_read_character
+
+;********************************************************************************
+
 
 check_input proc
     
