@@ -111,7 +111,7 @@ delay_loop1:
 
 delay_loop2: 
     loop delay_loop2
-    cmp delay_counter, 10
+    cmp delay_counter, 15
     jnz delay_loop1
 
     ret
@@ -176,10 +176,10 @@ check_input proc
     cmp al, 'D'
     je d_key_pressed
 
-    cmp al, 'L'
+    cmp al, 'A'
     je l_key_pressed
 
-    cmp al, 'l'
+    cmp al, 'a'
     je l_key_pressed
 
     jnz check_input_done
@@ -277,9 +277,16 @@ endp shift_down_shape
 ;********************************************************************************
 shift_right_shape proc
 
+    mov color, 0
+    call draw_square
+
     mov dx, start_col_sq
     add dx, block_size
-    mov finish_col_sq, dx
+    mov start_col_sq, dx
+
+    mov color, 14
+    call draw_square
+    call fall_delay
 
 
     ret
@@ -287,6 +294,17 @@ shift_right_shape proc
 
 ;********************************************************************************
 shift_left_shape proc
+
+    mov color, 0
+    call draw_square
+
+    mov dx, start_col_sq
+    sub dx, block_size
+    mov start_col_sq, dx
+
+    mov color, 14
+    call draw_square
+    call fall_delay
 
     ret
     endp shift_left_shape
