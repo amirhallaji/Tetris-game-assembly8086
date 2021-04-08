@@ -6,14 +6,18 @@ title (exe) Graphics System Calls
 
 .data 
 
-    block_size dw 20
+    block_size dw 15
     delay_counter dw ?
 
     color db ?
+
+    finish_row_screen dw ?
+    finish_col_screen_r dw 210
+    finish_col_screen_l dw 90
     
     ;**********SQUARE*************
-    start_col_sq dw 50
-    start_row_sq dw 50
+    start_col_sq dw 150
+    start_row_sq dw 0
     finish_col_sq dw ?
     finish_row_sq dw ?
     
@@ -42,19 +46,31 @@ title (exe) Graphics System Calls
 MAIN PROC FAR
     MOV AX, @DATA
     MOV DS, AX
+
+value_initialization:
+    mov finish_row_screen, 0
     
+
     CALL clear_screen   
     CALL set_graphic_mode
     CALL draw_init_score
     mov color, 14
-    call draw_square  
+    call draw_square 
+
+    
+
     
 main_loop:   
     ; call choose_random_shape   ;TODO 
     call shift_down_shape      
     call procedure_read_character
     call fall_delay
-    cmp finish_row_sq, 200
+
+    mov ax, finish_row_screen
+    add ax, block_size
+    mov finish_row_screen, ax
+
+    cmp finish_row_screen, 180
     jnz main_loop 
 
 
@@ -277,6 +293,14 @@ endp shift_down_shape
 ;********************************************************************************
 shift_right_shape proc
 
+    mov ax, finish_col_screen_r
+    cmp finish_col_sq, ax
+    js square_can_move_right
+
+    jmp square_cannot_move_right
+    
+square_can_move_right:
+
     mov color, 0
     call draw_square
 
@@ -288,12 +312,22 @@ shift_right_shape proc
     call draw_square
     call fall_delay
 
+square_cannot_move_right:
 
     ret
     endp shift_right_shape
 
 ;********************************************************************************
+
 shift_left_shape proc
+
+    mov ax, finish_col_screen_l
+    cmp ax, finish_col_sq
+    js square_can_move_left
+
+    jmp square_cannot_move_left
+
+square_can_move_left:
 
     mov color, 0
     call draw_square
@@ -305,6 +339,8 @@ shift_left_shape proc
     mov color, 14
     call draw_square
     call fall_delay
+
+square_cannot_move_left:
 
     ret
     endp shift_left_shape
