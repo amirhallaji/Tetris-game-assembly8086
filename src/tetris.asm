@@ -6,7 +6,7 @@ title (exe) Graphics System Calls
 
 .data 
 
-    block_size dw 15
+    block_size dw 20
     delay_counter dw ?
 
     border_col_left dw 0
@@ -15,8 +15,8 @@ title (exe) Graphics System Calls
     color db ?
 
     finish_row_screen dw ?
-    finish_col_screen_r dw 210
-    finish_col_screen_l dw 90
+    finish_col_screen_r dw 200
+    finish_col_screen_l dw 100
     
     ;**********SQUARE*************
     start_col_sq dw 150
@@ -32,7 +32,6 @@ title (exe) Graphics System Calls
     finish_row_rec_v dw 10
     finish_col_rec_v dw 140
 
-
     ; Score dispalyed.
     init_score dw '0'    
     init_score_hd dw '0'  
@@ -41,8 +40,6 @@ title (exe) Graphics System Calls
     buf db 6 dup(?)
 
     random_number db 0
-    
-
 
 .code
 
@@ -165,13 +162,13 @@ choose_random_shape proc
     
 endp choose_random_shape
 
-;***********************************************************************************
+;*********************************************************************************
 
 draw_border proc
 
 border_loop1:
     mov al, 1100b
-    mov cx, 73
+    mov cx, 68
     mov dx, border_col_left
     mov ah, 0ch
     int 10h   
