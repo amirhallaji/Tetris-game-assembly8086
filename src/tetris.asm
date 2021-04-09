@@ -9,6 +9,9 @@ title (exe) Graphics System Calls
     block_size dw 15
     delay_counter dw ?
 
+    border_col_left dw 0
+    border_col_right dw 0
+
     color db ?
 
     finish_row_screen dw ?
@@ -54,6 +57,7 @@ value_initialization:
     CALL clear_screen   
     CALL set_graphic_mode
     CALL draw_init_score
+    call draw_border
     mov color, 14
     call draw_square 
 
@@ -106,7 +110,6 @@ set_graphic_mode proc ; change color for a single pixel, set graphics video mode
 endp set_graphic_mode
 
 ;********************************************************************************
-
 
 draw_init_score proc
     
@@ -163,6 +166,37 @@ choose_random_shape proc
 endp choose_random_shape
 
 ;***********************************************************************************
+
+draw_border proc
+
+border_loop1:
+    mov al, 1100b
+    mov cx, 73
+    mov dx, border_col_left
+    mov ah, 0ch
+    int 10h   
+    inc border_col_left
+    cmp dx, 200
+    js border_loop1
+
+border_loop2:
+    mov al, 1100b
+    mov cx, 212
+    mov dx, border_col_right
+    mov ah, 0ch
+    int 10h   
+    inc border_col_right
+    cmp dx, 200
+    js border_loop2
+    
+     
+
+    ret
+    endp draw_border
+
+;***********************************************************************************
+
+
 procedure_read_character proc
 
     mov ah, 1
