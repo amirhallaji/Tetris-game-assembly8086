@@ -29,8 +29,8 @@ title (exe) Graphics System Calls
     ; vertical rectangle
     start_col_rec_v dw 100
     start_row_rec_v dw 0 
-    finish_row_rec_v dw 10
-    finish_col_rec_v dw 140
+    finish_row_rec_v dw ?
+    finish_col_rec_v dw ?
 
     ; Score dispalyed.
     init_score dw '0'    
@@ -57,8 +57,6 @@ value_initialization:
     call draw_border
     mov color, 14
     call draw_square 
-
-    
 
     
 main_loop:   
@@ -269,7 +267,7 @@ rec_v_loop2:
 endp draw_rectangle_vertical
 
 ;********************************************************************************
-
+    mov di, 1
 draw_square proc 
                  
     MOV AH, 0ch                 
@@ -297,8 +295,10 @@ sq_loop2:
     
     INC DX
     CMP DX, finish_row_sq
-    JNZ sq_loop1         
-    
+    JNZ sq_loop1  
+
+
+done:    
     ret
 endp draw_square
 
