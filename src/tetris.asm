@@ -15,7 +15,7 @@ title (exe) Graphics System Calls
     color db 14, 1
 
     current_row_screen dw ?
-    finish_col_screen_r dw 200
+    finish_col_screen_r dw 235
     finish_col_screen_l dw 100
     
     ;**********SQUARE*************
@@ -178,7 +178,7 @@ draw_border proc
 
 border_loop1:
     mov al, 1100b
-    mov cx, 68
+    mov cx, 88
     mov dx, border_col_left
     mov ah, 0ch
     int 10h   
@@ -188,7 +188,7 @@ border_loop1:
 
 border_loop2:
     mov al, 1100b
-    mov cx, 212
+    mov cx, 242
     mov dx, border_col_right
     mov ah, 0ch
     int 10h   
@@ -535,7 +535,7 @@ shift_left_shape proc
 shift_left_square_shape:
 
     mov ax, finish_col_screen_l
-    cmp ax, finish_col_sq
+    cmp ax, start_col_sq
     js square_can_move_left
 
     jmp shift_left_done
@@ -561,7 +561,7 @@ square_can_move_left:
 shift_left_horizontal_rectangle_shape:
 
     mov ax, finish_col_screen_l
-    cmp ax, finish_col_rec_h
+    cmp ax, start_col_rec_h
     js horizontal_rectangle_can_move__left
 
     jmp shift_left_done
@@ -590,6 +590,33 @@ shift_left_done:
 
 ;********************************************************************************
 quick_shift_down proc
+
+    cmp shape_number, 1
+    jz quick_shift_down_square
+
+quick_shift_down_square:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_sq
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_sq, dx
+
+    mov color, 14
+    call draw_shape
+    call fall_delay
+
+
 
     ret
     endp quick_shift_down
