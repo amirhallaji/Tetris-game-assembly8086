@@ -1086,6 +1086,14 @@ l_shape_can_move_left:
 
 ;-----------------------------
 shift_left_ll_shape:
+
+    mov ax, finish_col_screen_l
+    cmp ax, start_col_ll_left
+    js ll_shape_can_move_left
+
+    jmp shift_left_done
+
+ll_shape_can_move_left:
     mov color, 0
     call draw_shape
 
@@ -1106,8 +1114,6 @@ shift_left_ll_shape:
 ;-------------------------------
 
 shift_left_done:
-
-
     ret
     endp shift_left_shape
 
