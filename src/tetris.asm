@@ -1087,8 +1087,6 @@ l_shape_can_move_left:
 
 ;-----------------------------
 shift_left_ll_shape:
-
-shift_left_done:
     mov color, 0
     call draw_shape
 
@@ -1105,6 +1103,11 @@ shift_left_done:
     call fall_delay
 
     jmp shift_left_done
+
+;-------------------------------
+
+shift_left_done:
+
 
     ret
     endp shift_left_shape
