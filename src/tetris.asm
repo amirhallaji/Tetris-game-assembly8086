@@ -38,6 +38,18 @@ title (exe) Graphics System calls
     finish_row_rec_v dw ?
     finish_col_rec_v dw ?
 
+    ; T-shape up-part
+    start_col_t_up dw 100
+    start_row_t_up dw 0
+    finish_col_t_up dw ?
+    finish_row_t_up dw ?
+    ; T-shape down-part
+    start_col_t_down dw 85
+    start_row_t_down dw 15
+    finish_col_t_down dw ?
+    finish_row_t_down dw ?
+    
+
     ; Score dispalyed.
     init_score dw '0'    
     init_score_hd dw '0'  
@@ -50,7 +62,7 @@ title (exe) Graphics System calls
     shape_number dw 1
     time dw 1
 
-	board dw 180 dup(0000h) 
+	board dw 180 dup(0000h)  ; 180 blocks in a 135 * 300 board.
 
     
 
@@ -76,7 +88,7 @@ main_loop:
     call procedure_read_character
     call fall_delay
     call shape_can_move_down
-    
+
     jmp main_loop
 
 
@@ -197,7 +209,6 @@ border_loop2:
 
 ;***********************************************************************************
 
-
 procedure_read_character proc
 
     mov ah, 1
@@ -208,7 +219,6 @@ procedure_read_character proc
     endp procedure_read_character
 
 ;********************************************************************************
-
 
 check_input proc
     
@@ -259,30 +269,6 @@ check_input_done:
 endp check_input 
 
 ;***********************************************************************************
-
-; draw_rectangle_vertical proc
-    
-;     mov al, 1001b  ;set color blue
-;     mov AH, 0CH
-   
-;     mov cx, start_col_rec_v 
-; rec_v_loop1:                
-
-;     mov dx, start_row_rec_v
-; rec_v_loop2:
-;     INT 10H
-;     INC dx
-;     CMP dx, finish_row_rec_v
-;     JNZ rec_v_loop2
-    
-;     INC cx
-;     CMP cx, finish_col_rec_v
-;     JNZ rec_v_loop1
-         
-;     ret
-; endp draw_rectangle_vertical
-
-;********************************************************************************
 shape_initialization proc
 
 
@@ -305,7 +291,7 @@ next_shape proc
 
     inc shape_number
     call shape_initialization
-    cmp shape_number, 3
+    cmp shape_number, 4
     jz shape_reset
 
     jmp next_shape_done
@@ -326,8 +312,12 @@ draw_shape proc
     cmp shape_number, 2
     jz horizontal_rectangle_shape
 
+    cmp shape_number, 3
+    jz t_shape
+
     jmp draw_shape_done
-                 
+
+;-----------------------------------                 
 
 square_shape:
     mov AH, 0ch                 
@@ -358,6 +348,8 @@ sq_loop2:
     JNZ sq_loop1  
 
     jmp draw_shape_done
+
+;-----------------------------------                 
 
 horizontal_rectangle_shape:
 
@@ -391,6 +383,74 @@ rec_h_loop2:
     CMP dx, finish_row_rec_h
     JNZ rec_h_loop1
 
+    jmp draw_shape_done
+
+;-----------------------------------                 
+
+t_shape:
+
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_t_up
+    add dx, block_size
+    mov finish_row_t_up, dx
+
+    mov dx, start_col_t_up
+    add dx, block_size
+    mov finish_col_t_up, dx
+
+    
+    mov dx, start_row_t_up
+    
+t_loop1:
+    mov cx, start_col_t_up
+    
+t_loop2:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_t_up
+    JNZ t_loop2
+    
+    INC dx
+    CMP dx, finish_row_t_up
+    JNZ t_loop1
+;*******
+; down part 
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_t_down
+    add dx, block_size
+    mov finish_row_t_down, dx
+
+    mov dx, start_col_t_down
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov finish_col_t_down, dx
+
+    
+    mov dx, start_row_t_down
+    
+t_loop3:
+    mov cx, start_col_t_down
+    
+t_loop4:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_t_down
+    JNZ t_loop4
+    
+    INC dx
+    CMP dx, finish_row_t_down
+    JNZ t_loop3
+
+    jmp draw_shape_done
+
+;-----------------------------------                 
+
+
 draw_shape_done:    
     ret
 endp draw_shape
@@ -404,6 +464,9 @@ shift_down_shape proc
 
     cmp shape_number, 2
     jz shift_down_horizontal_rectangle_shape
+
+    cmp shape_number, 3
+    jz shift_down_t_shape
 
     jmp shift_down_done
 
@@ -423,6 +486,8 @@ shift_down_square_shape:
 
     jmp shift_down_done
 
+;---------------------------
+
 shift_down_horizontal_rectangle_shape:
 
     mov color, 0
@@ -432,12 +497,35 @@ shift_down_horizontal_rectangle_shape:
     add dx, block_size
     mov start_row_rec_h, dx
 
-    mov color, 1  ; set color blue
+    mov color, 9  ; set color blue
     call draw_shape
     call fall_delay
 
     jmp shift_down_done
 
+;---------------------------
+
+shift_down_t_shape:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_t_down
+    add dx, block_size
+    mov start_row_t_down, dx
+    
+    mov dx, start_row_t_up
+    add dx, block_size
+    mov start_row_t_up, dx
+
+    mov color, 13  ; set color light magenta
+    call draw_shape
+    call fall_delay
+
+    jmp shift_down_done
+
+
+;---------------------------
 shift_down_done:
     ret
 endp shift_down_shape
@@ -518,7 +606,7 @@ horizontal_rectangle_can_move_right:
     add dx, block_size
     mov start_col_rec_h, dx
 
-    mov color, 1
+    mov color, 9
     call draw_shape
     call fall_delay
 
@@ -587,7 +675,7 @@ horizontal_rectangle_can_move__left:
     sub dx, block_size
     mov start_col_rec_h, dx
 
-    mov color, 1
+    mov color, 9
     call draw_shape
     call fall_delay
 
