@@ -89,7 +89,6 @@ title (exe) Graphics System calls
     time dw 1
 
 	board dw 180 dup(0000h)  ; 180 blocks in a 135 * 300 board.
-
     
 
 .code
