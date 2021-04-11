@@ -50,13 +50,13 @@ title (exe) Graphics System calls
     finish_row_t_down dw ?
 
     ; L-shape right-part
-    start_col_l_right dw 100
+    start_col_l_right dw 150
     start_row_l_right dw 30
     finish_col_l_right dw ?
     finish_row_l_right dw ?
 
     ; L-shape left-part
-    start_col_l_left dw 85
+    start_col_l_left dw 135
     start_row_l_left dw 0
     finish_col_l_left dw ?
     finish_row_l_left dw ?
@@ -302,9 +302,9 @@ t_shape_initialize:
 
 
 l_shape_initialize:
-    mov start_col_l_right, 100
+    mov start_col_l_right, 150
     mov start_row_l_right, 30
-    mov start_col_l_left, 85
+    mov start_col_l_left, 135
     mov start_row_l_left, 0
 
 ll_shape_initialize:
@@ -633,13 +633,9 @@ shift_down_l_shape:
 
     mov dx, start_row_l_right
     add dx, block_size
-    add dx, block_size
-    add dx, block_size
     mov start_row_l_right, dx
     
     mov dx, start_row_l_left
-    add dx, block_size
-    add dx, block_size
     add dx, block_size
     mov start_row_l_left, dx
 
@@ -660,6 +656,9 @@ shape_can_move_down proc
     cmp shape_number, 3
     jz can_t_shape_move_down
 
+    cmp shape_number, 4
+    jz can_l_shape_move_down
+
     mov ax, current_row_screen
     add ax, block_size
     mov current_row_screen, ax
@@ -677,7 +676,15 @@ can_t_shape_move_down:
     mov current_row_screen, ax
     cmp current_row_screen, 165 ; has reached down
     jnz shape_can_move_down_done:
-    jz has_reached_down    
+    jz has_reached_down 
+
+can_l_shape_move_down:   
+    mov ax, current_row_screen
+    add ax, block_size
+    mov current_row_screen, ax
+    cmp current_row_screen, 150 ; has reached down
+    jnz shape_can_move_down_done:
+    jz has_reached_down 
 
 shape_can_move_down_done:
     ret
