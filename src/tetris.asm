@@ -62,6 +62,18 @@ title (exe) Graphics System calls
     finish_row_l_left dw ?
 
 
+    ;; ll-shape right-part
+    start_col_ll_right dw 150
+    start_row_ll_right dw 15
+    finish_col_ll_right dw ?
+    finish_row_ll_right dw ?
+
+    ; ll-shape left-part
+    start_col_ll_left dw 135
+    start_row_ll_left dw 0
+    finish_col_ll_left dw ?
+    finish_row_ll_left dw ?
+
 
 
     ; Score dispalyed.
@@ -308,6 +320,11 @@ l_shape_initialize:
     mov start_row_l_left, 0
 
 ll_shape_initialize:
+    mov start_col_ll_right, 150
+    mov start_row_ll_right, 15
+    mov start_col_ll_left, 135
+    mov start_row_ll_left, 0
+
 
 shape_initialization_done:
     ret
@@ -320,7 +337,7 @@ next_shape proc
 
     inc shape_number
     call shape_initialization
-    cmp shape_number, 5
+    cmp shape_number, 6
     jz shape_reset
 
     jmp next_shape_done
@@ -545,6 +562,64 @@ l_loop4:
     jmp draw_shape_done
 ;-----------------------------------                 
 ll_shape:
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_ll_right
+    add dx, block_size
+    add dx, block_size
+    mov finish_row_ll_right, dx
+
+    mov dx, start_col_ll_right
+    add dx, block_size
+    mov finish_col_ll_right, dx
+
+    
+    mov dx, start_row_ll_right
+    
+ll_loop1:
+    mov cx, start_col_ll_right
+    
+ll_loop2:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_ll_right
+    JNZ ll_loop2
+    
+    INC dx
+    CMP dx, finish_row_ll_right
+    JNZ ll_loop1  
+
+; left-part
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_ll_left
+    add dx, block_size
+    add dx, block_size
+    mov finish_row_ll_left, dx
+
+    mov dx, start_col_ll_left
+    add dx, block_size
+    mov finish_col_ll_left, dx
+
+    
+    mov dx, start_row_ll_left
+    
+ll_loop3:
+    mov cx, start_col_ll_left
+    
+ll_loop4:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_ll_left
+    JNZ ll_loop4
+    
+    INC dx
+    CMP dx, finish_row_ll_left
+    JNZ ll_loop3  
+
+    jmp draw_shape_done
 
 ;-----------------------------------                 
 
@@ -568,6 +643,9 @@ shift_down_shape proc
 
     cmp shape_number, 4
     jz shift_down_l_shape
+
+    cmp shape_number, 5
+    jz shift_down_ll_shape
 
     jmp shift_down_done
 
@@ -645,6 +723,24 @@ shift_down_l_shape:
 
     jmp shift_down_done
 ;---------------------------
+shift_down_ll_shape:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_ll_right
+    add dx, block_size
+    mov start_row_ll_right, dx
+    
+    mov dx, start_row_ll_left
+    add dx, block_size
+    mov start_row_ll_left, dx
+
+    mov color, 10  ; set color light green
+    call draw_shape
+    call fall_delay
+
+    jmp shift_down_done
+;---------------------------
 
 shift_down_done:
     ret
@@ -658,6 +754,9 @@ shape_can_move_down proc
 
     cmp shape_number, 4
     jz can_l_shape_move_down
+
+    cmp shape_number, 5
+    jz  can_ll_shape_move_down
 
     mov ax, current_row_screen
     add ax, block_size
@@ -685,6 +784,15 @@ can_l_shape_move_down:
     cmp current_row_screen, 150 ; has reached down
     jnz shape_can_move_down_done:
     jz has_reached_down 
+
+can_ll_shape_move_down:
+    mov ax, current_row_screen
+    add ax, block_size
+    mov current_row_screen, ax
+    cmp current_row_screen, 150 ; has reached down
+    jnz shape_can_move_down_done:
+    jz has_reached_down 
+
 
 shape_can_move_down_done:
     ret
@@ -821,6 +929,30 @@ l_shape_can_move_right:
 ;----------------------------
 shift_right_ll_shape:
 
+    mov ax, finish_col_screen_r
+    cmp finish_col_ll_right, ax
+    js ll_shape_can_move_right
+
+    jmp shift_right_done
+
+ll_shape_can_move_right:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_col_ll_right
+    add dx, block_size
+    mov start_col_ll_right, dx
+
+    mov dx, start_col_ll_left
+    add dx, block_size
+    mov start_col_ll_left, dx
+
+    mov color, 10
+    call draw_shape
+    call fall_delay
+
+    jmp shift_right_done
 
 shift_right_done:
     ret
@@ -957,6 +1089,22 @@ l_shape_can_move_left:
 shift_left_ll_shape:
 
 shift_left_done:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_col_ll_left
+    sub dx, block_size
+    mov start_col_ll_left, dx
+    
+    mov dx, start_col_ll_right
+    sub dx, block_size
+    mov start_col_ll_right, dx
+
+    mov color, 10
+    call draw_shape
+    call fall_delay
+
+    jmp shift_left_done
 
     ret
     endp shift_left_shape
