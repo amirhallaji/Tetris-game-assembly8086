@@ -1,4 +1,4 @@
-title (exe) Graphics System Calls 
+title (exe) Graphics System calls 
 
 .model small 
 .stack64
@@ -65,27 +65,18 @@ value_initialization:
     mov current_row_screen, 0
     
 
-    CalL clear_screen   
-    CalL set_graphic_mode
-    CalL draw_init_score
+    call clear_screen   
+    call set_graphic_mode
+    call draw_init_score
     call draw_border
-    ; mov color, 14
-    
     
 main_loop:   
     ; call choose_random_shape   ;TODO 
     call shift_down_shape      
     call procedure_read_character
     call fall_delay
-
+    call shape_can_move_down
     
-    mov ax, current_row_screen
-    add ax, block_size
-    mov current_row_screen, ax
-    cmp current_row_screen, 180 ; has reached down
-    jnz main_loop 
-
-    call next_shape
     jmp main_loop
 
 
@@ -245,7 +236,7 @@ check_input proc
     cmp al, 's'
     je s_key_pressed
 
-    cmp al, 's'
+    cmp al, 'S'
     je s_key_pressed
 
     jnz check_input_done
@@ -452,6 +443,24 @@ shift_down_done:
 endp shift_down_shape
                
 ;********************************************************************************
+shape_can_move_down proc
+
+    mov ax, current_row_screen
+    add ax, block_size
+    mov current_row_screen, ax
+    cmp current_row_screen, 180 ; has reached down
+    jnz shape_can_move_down_done:
+    jz has_reached_down
+
+has_reached_down:
+    call next_shape
+    jmp shape_can_move_down_done
+
+shape_can_move_down_done:
+    ret
+    endp shape_can_move_down
+;********************************************************************************
+
 shift_right_shape proc
 
     cmp shape_number, 1
