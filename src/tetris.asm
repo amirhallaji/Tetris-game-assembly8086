@@ -6,15 +6,15 @@ title (exe) Graphics System Calls
 
 .data 
 
-    block_size dw 20
+    block_size dw 15
     delay_counter dw ?
 
-    shape_number dw 1
+    shape_number dw 2
 
     border_col_left dw 0
     border_col_right dw 0
 
-    color db ?
+    color db 14, 1
 
     finish_row_screen dw ?
     finish_col_screen_r dw 200
@@ -57,6 +57,7 @@ MAIN PROC FAR
     MOV DS, AX
 
 value_initialization:
+
     mov finish_row_screen, 0
     
 
@@ -64,8 +65,7 @@ value_initialization:
     CALL set_graphic_mode
     CALL draw_init_score
     call draw_border
-    mov color, 14
-    call draw_shape 
+    ; mov color, 14
 
     
 main_loop:   
@@ -253,27 +253,27 @@ endp check_input
 
 ;***********************************************************************************
 
-draw_rectangle_vertical proc
+; draw_rectangle_vertical proc
     
-    MOV AL, 1001b  ;set color blue
-    MOV AH, 0CH
+;     MOV AL, 1001b  ;set color blue
+;     MOV AH, 0CH
    
-    MOV CX, start_col_rec_v 
-rec_v_loop1:                
+;     MOV CX, start_col_rec_v 
+; rec_v_loop1:                
 
-    MOV DX, start_row_rec_v
-rec_v_loop2:
-    INT 10H
-    INC DX
-    CMP DX, finish_row_rec_v
-    JNZ rec_v_loop2
+;     MOV DX, start_row_rec_v
+; rec_v_loop2:
+;     INT 10H
+;     INC DX
+;     CMP DX, finish_row_rec_v
+;     JNZ rec_v_loop2
     
-    INC CX
-    CMP CX, finish_col_rec_v
-    JNZ rec_v_loop1
+;     INC CX
+;     CMP CX, finish_col_rec_v
+;     JNZ rec_v_loop1
          
-    ret
-endp draw_rectangle_vertical
+;     ret
+; endp draw_rectangle_vertical
 
 ;********************************************************************************
 draw_shape proc 
@@ -281,11 +281,13 @@ draw_shape proc
     cmp shape_number, 1
     jz square_shape
 
+    cmp shape_number, 2
+    jz horizontal_rectangle_shape
+
     jmp draw_shape_done
                  
 
 square_shape:
-
     MOV AH, 0ch                 
     MOV AL, color
 
@@ -313,6 +315,39 @@ sq_loop2:
     CMP DX, finish_row_sq
     JNZ sq_loop1  
 
+    jmp draw_shape_done
+
+horizontal_rectangle_shape:
+
+    MOV AH, 0ch                 
+    MOV AL, color
+
+    mov dx, start_row_rec_h
+    add dx, block_size
+    mov finish_row_rec_h, dx
+
+    mov dx, start_col_rec_h
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov finish_col_rec_h, dx
+
+    
+    MOV DX, start_row_rec_h
+    
+sq_loop3:
+    MOV CX, start_col_rec_h
+    
+sq_loop4:
+    INT 10h
+    INC CX
+    CMP CX, finish_col_rec_h
+    JNZ sq_loop4
+    
+    INC DX
+    CMP DX, finish_row_rec_h
+    JNZ sq_loop3
 
 draw_shape_done:    
     ret
@@ -322,6 +357,15 @@ endp draw_shape
 
 shift_down_shape proc
 
+    cmp shape_number, 1
+    jz shift_down_square_shape
+
+    cmp shape_number, 2
+    jz shift_down_horizontal_rectangle_shape
+
+    jmp shift_down_done
+
+shift_down_square_shape:
     mov color, 0
     call draw_shape
 
@@ -334,17 +378,46 @@ shift_down_shape proc
     call draw_shape
     call fall_delay
 
+    jmp shift_down_done
+
+shift_down_horizontal_rectangle_shape:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_rec_h
+    add dx, block_size
+    mov start_row_rec_h, dx
+
+    mov color, 1  ; set color blue
+    call draw_shape
+    call fall_delay
+
+    jmp shift_down_done
+
+shift_down_done:
     ret
 endp shift_down_shape
                
 ;********************************************************************************
 shift_right_shape proc
 
+    cmp shape_number, 1
+    jz shift_right_square_shape
+
+    cmp shape_number, 2
+    jz shift_right_horizontal_rectangle_shape
+
+    jmp shift_right_done
+
+
+shift_right_square_shape:
+
     mov ax, finish_col_screen_r
     cmp finish_col_sq, ax
     js square_can_move_right
 
-    jmp square_cannot_move_right
+    jmp shift_right_done
     
 square_can_move_right:
 
@@ -359,8 +432,33 @@ square_can_move_right:
     call draw_shape
     call fall_delay
 
-square_cannot_move_right:
+    jmp shift_right_done:
 
+shift_right_horizontal_rectangle_shape:
+
+    mov ax, finish_col_screen_r
+    cmp finish_col_rec_h, ax
+    js square_can_move_right
+
+    jmp shift_right_done
+
+horizontal_rectangle_can_move_right:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_col_rec_h
+    add dx, block_size
+    mov start_col_rec_h, dx
+
+    mov color, 1
+    call draw_shape
+    call fall_delay
+
+    jmp shift_right_done
+
+
+shift_right_done:
     ret
     endp shift_right_shape
 
@@ -368,11 +466,21 @@ square_cannot_move_right:
 
 shift_left_shape proc
 
+    cmp shape_number, 1
+    jz shift_left_square_shape
+
+    cmp shape_number, 2
+    jz shift_left_horizontal_rectangle_shape
+
+    jmp shift_left_done
+
+shift_left_square_shape:
+
     mov ax, finish_col_screen_l
     cmp ax, finish_col_sq
     js square_can_move_left
 
-    jmp square_cannot_move_left
+    jmp shift_left_done
 
 square_can_move_left:
 
@@ -387,7 +495,32 @@ square_can_move_left:
     call draw_shape
     call fall_delay
 
-square_cannot_move_left:
+    jmp shift_left_done
+
+shift_left_horizontal_rectangle_shape:
+
+    mov ax, finish_col_screen_l
+    cmp ax, finish_col_rec_h
+    js horizontal_rectangle_can_move__left
+
+    jmp shift_left_done
+
+horizontal_rectangle_can_move__left:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_col_rec_h
+    sub dx, block_size
+    mov start_col_rec_h, dx
+
+    mov color, 1
+    call draw_shape
+    call fall_delay
+
+    jmp shift_left_done
+
+shift_left_done:
 
     ret
     endp shift_left_shape
