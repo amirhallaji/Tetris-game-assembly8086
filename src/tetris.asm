@@ -49,22 +49,25 @@ title (exe) Graphics System Calls
 
     shape_number dw 1
     time dw 1
+
+	board dw 180 dup(0000h) 
+
     
 
 .code
 
 MAIN PROC FAR
-    MOV AX, @DATA
-    MOV DS, AX
+    mov ax, @DATA
+    mov DS, ax
 
 value_initialization:
 
     mov current_row_screen, 0
     
 
-    CALL clear_screen   
-    CALL set_graphic_mode
-    CALL draw_init_score
+    CalL clear_screen   
+    CalL set_graphic_mode
+    CalL draw_init_score
     call draw_border
     ; mov color, 14
     
@@ -87,7 +90,7 @@ main_loop:
 
 
 EXIT:      
-    MOV AX, 4C00H
+    mov ax, 4C00H
     INT 21H
     
 
@@ -95,10 +98,10 @@ EXIT:
 
 clear_screen PROC    
     
-    MOV AL, 06H       ;scroll up
-    MOV BH, 00H
-    MOV CX, 0000H
-    MOV DX, 184FH
+    mov al, 06H       ;scroll up
+    mov bh, 00H
+    mov cx, 0000H
+    mov dx, 184FH
     INT 10H
     
     RET
@@ -109,8 +112,8 @@ ENDP clear_screen
 
 set_graphic_mode proc ; change color for a single pixel, set graphics video mode.
        
-    MOV AL, 13H
-    MOV AH, 0
+    mov al, 13H
+    mov AH, 0
     INT 10H
     
     ret
@@ -121,8 +124,8 @@ endp set_graphic_mode
 
 draw_init_score proc
     
-    MOV DL, '0'
-    MOV AH, 2
+    mov DL, '0'
+    mov AH, 2
     INT 21h
     
     ret
@@ -133,7 +136,7 @@ fall_delay proc
 
     mov delay_counter, 1
 delay_loop1:
-    MOV CX, 0FFFFH
+    mov cx, 0FFFFH
     inc delay_counter
 
 delay_loop2: 
@@ -268,21 +271,21 @@ endp check_input
 
 ; draw_rectangle_vertical proc
     
-;     MOV AL, 1001b  ;set color blue
-;     MOV AH, 0CH
+;     mov al, 1001b  ;set color blue
+;     mov AH, 0CH
    
-;     MOV CX, start_col_rec_v 
+;     mov cx, start_col_rec_v 
 ; rec_v_loop1:                
 
-;     MOV DX, start_row_rec_v
+;     mov dx, start_row_rec_v
 ; rec_v_loop2:
 ;     INT 10H
-;     INC DX
-;     CMP DX, finish_row_rec_v
+;     INC dx
+;     CMP dx, finish_row_rec_v
 ;     JNZ rec_v_loop2
     
-;     INC CX
-;     CMP CX, finish_col_rec_v
+;     INC cx
+;     CMP cx, finish_col_rec_v
 ;     JNZ rec_v_loop1
          
 ;     ret
@@ -336,8 +339,8 @@ draw_shape proc
                  
 
 square_shape:
-    MOV AH, 0ch                 
-    MOV AL, color
+    mov AH, 0ch                 
+    mov al, color
 
     mov dx, start_row_sq
     add dx, block_size
@@ -348,27 +351,27 @@ square_shape:
     mov finish_col_sq, dx
 
     
-    MOV DX, start_row_sq
+    mov dx, start_row_sq
     
 sq_loop1:
-    MOV CX, start_col_sq
+    mov cx, start_col_sq
     
 sq_loop2:
     INT 10h
-    INC CX
-    CMP CX, finish_col_sq
+    INC cx
+    CMP cx, finish_col_sq
     JNZ sq_loop2
     
-    INC DX
-    CMP DX, finish_row_sq
+    INC dx
+    CMP dx, finish_row_sq
     JNZ sq_loop1  
 
     jmp draw_shape_done
 
 horizontal_rectangle_shape:
 
-    MOV AH, 0ch                 
-    MOV AL, color
+    mov AH, 0ch                 
+    mov al, color
 
     mov dx, start_row_rec_h
     add dx, block_size
@@ -382,19 +385,19 @@ horizontal_rectangle_shape:
     mov finish_col_rec_h, dx
 
     
-    MOV DX, start_row_rec_h
+    mov dx, start_row_rec_h
     
 rec_h_loop1:
-    MOV CX, start_col_rec_h
+    mov cx, start_col_rec_h
     
 rec_h_loop2:
     INT 10h
-    INC CX
-    CMP CX, finish_col_rec_h
+    INC cx
+    CMP cx, finish_col_rec_h
     JNZ rec_h_loop2
     
-    INC DX
-    CMP DX, finish_row_rec_h
+    INC dx
+    CMP dx, finish_row_rec_h
     JNZ rec_h_loop1
 
 draw_shape_done:    
