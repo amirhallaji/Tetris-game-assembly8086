@@ -9,6 +9,8 @@ title (exe) Graphics System Calls
     block_size dw 20
     delay_counter dw ?
 
+    shape_number dw 1
+
     border_col_left dw 0
     border_col_right dw 0
 
@@ -26,6 +28,13 @@ title (exe) Graphics System Calls
     
     ;********* RECTANGLE**********
     
+    ; horizontal rectangle
+    start_col_rec_h dw 150
+    start_row_rec_h dw 0
+    finish_col_rec_h dw ?
+    finish_row_rec_h dw ?
+
+
     ; vertical rectangle
     start_col_rec_v dw 100
     start_row_rec_v dw 0 
@@ -56,7 +65,7 @@ value_initialization:
     CALL draw_init_score
     call draw_border
     mov color, 14
-    call draw_square 
+    call draw_shape 
 
     
 main_loop:   
@@ -267,9 +276,16 @@ rec_v_loop2:
 endp draw_rectangle_vertical
 
 ;********************************************************************************
-    mov di, 1
-draw_square proc 
+draw_shape proc 
+
+    cmp shape_number, 1
+    jz square_shape
+
+    jmp draw_shape_done
                  
+
+square_shape:
+
     MOV AH, 0ch                 
     MOV AL, color
 
@@ -298,16 +314,16 @@ sq_loop2:
     JNZ sq_loop1  
 
 
-done:    
+draw_shape_done:    
     ret
-endp draw_square
+endp draw_shape
 
 ;********************************************************************************
 
 shift_down_shape proc
 
     mov color, 0
-    call draw_square
+    call draw_shape
 
 
     mov dx, start_row_sq
@@ -315,7 +331,7 @@ shift_down_shape proc
     mov start_row_sq, dx
 
     mov color, 14
-    call draw_square
+    call draw_shape
     call fall_delay
 
     ret
@@ -333,14 +349,14 @@ shift_right_shape proc
 square_can_move_right:
 
     mov color, 0
-    call draw_square
+    call draw_shape
 
     mov dx, start_col_sq
     add dx, block_size
     mov start_col_sq, dx
 
     mov color, 14
-    call draw_square
+    call draw_shape
     call fall_delay
 
 square_cannot_move_right:
@@ -361,14 +377,14 @@ shift_left_shape proc
 square_can_move_left:
 
     mov color, 0
-    call draw_square
+    call draw_shape
 
     mov dx, start_col_sq
     sub dx, block_size
     mov start_col_sq, dx
 
     mov color, 14
-    call draw_square
+    call draw_shape
     call fall_delay
 
 square_cannot_move_left:
