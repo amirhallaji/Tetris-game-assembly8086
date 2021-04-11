@@ -9,14 +9,12 @@ title (exe) Graphics System Calls
     block_size dw 15
     delay_counter dw ?
 
-    shape_number dw 2
-
     border_col_left dw 0
     border_col_right dw 0
 
     color db 14, 1
 
-    finish_row_screen dw ?
+    current_row_screen dw ?
     finish_col_screen_r dw 200
     finish_col_screen_l dw 100
     
@@ -34,7 +32,6 @@ title (exe) Graphics System Calls
     finish_col_rec_h dw ?
     finish_row_rec_h dw ?
 
-
     ; vertical rectangle
     start_col_rec_v dw 100
     start_row_rec_v dw 0 
@@ -50,6 +47,10 @@ title (exe) Graphics System Calls
 
     random_number db 0
 
+    shape_number dw 1
+    time dw 1
+    
+
 .code
 
 MAIN PROC FAR
@@ -58,7 +59,7 @@ MAIN PROC FAR
 
 value_initialization:
 
-    mov finish_row_screen, 0
+    mov current_row_screen, 0
     
 
     CALL clear_screen   
@@ -66,7 +67,7 @@ value_initialization:
     CALL draw_init_score
     call draw_border
     ; mov color, 14
-
+    
     
 main_loop:   
     ; call choose_random_shape   ;TODO 
@@ -74,12 +75,15 @@ main_loop:
     call procedure_read_character
     call fall_delay
 
-    mov ax, finish_row_screen
+    
+    mov ax, current_row_screen
     add ax, block_size
-    mov finish_row_screen, ax
-
-    cmp finish_row_screen, 180
+    mov current_row_screen, ax
+    cmp current_row_screen, 180 ; has reached down
     jnz main_loop 
+
+    call next_shape
+    jmp main_loop
 
 
 EXIT:      
@@ -141,7 +145,6 @@ delay_loop2:
 endp fall_delay
 
 ;***********************************************************************************
-
 
 choose_random_shape proc
     
@@ -236,6 +239,12 @@ check_input proc
     cmp al, 'a'
     je l_key_pressed
 
+    cmp al, 's'
+    je s_key_pressed
+
+    cmp al, 's'
+    je s_key_pressed
+
     jnz check_input_done
 
 d_key_pressed:
@@ -244,6 +253,10 @@ d_key_pressed:
 
 l_key_pressed:
     call shift_left_shape
+    jmp check_input_done
+
+s_key_pressed:
+    call quick_shift_down
     jmp check_input_done
 
 
@@ -276,6 +289,41 @@ endp check_input
 ; endp draw_rectangle_vertical
 
 ;********************************************************************************
+shape_initialization proc
+
+
+square_initialize:
+    mov start_col_sq, 150
+    mov start_row_sq, 0
+
+horizontal_rectangle_initialize:
+    mov start_col_rec_h, 150
+    mov start_row_rec_h, 0
+
+shape_initialization_done:
+    ret
+    endp shape_initialization
+;********************************************************************************
+
+next_shape proc
+
+    mov current_row_screen, 0 ; for the next shape
+
+    inc shape_number
+    call shape_initialization
+    cmp shape_number, 3
+    jz shape_reset
+
+    jmp next_shape_done
+
+shape_reset:
+    mov shape_number, 1
+
+next_shape_done:
+    ret
+    endp next_shape
+;********************************************************************************
+
 draw_shape proc 
 
     cmp shape_number, 1
@@ -336,18 +384,18 @@ horizontal_rectangle_shape:
     
     MOV DX, start_row_rec_h
     
-sq_loop3:
+rec_h_loop1:
     MOV CX, start_col_rec_h
     
-sq_loop4:
+rec_h_loop2:
     INT 10h
     INC CX
     CMP CX, finish_col_rec_h
-    JNZ sq_loop4
+    JNZ rec_h_loop2
     
     INC DX
     CMP DX, finish_row_rec_h
-    JNZ sq_loop3
+    JNZ rec_h_loop1
 
 draw_shape_done:    
     ret
@@ -365,10 +413,11 @@ shift_down_shape proc
 
     jmp shift_down_done
 
+
 shift_down_square_shape:
+
     mov color, 0
     call draw_shape
-
 
     mov dx, start_row_sq
     add dx, block_size
@@ -411,6 +460,8 @@ shift_right_shape proc
     jmp shift_right_done
 
 
+;shifting square shape
+
 shift_right_square_shape:
 
     mov ax, finish_col_screen_r
@@ -434,11 +485,15 @@ square_can_move_right:
 
     jmp shift_right_done:
 
+; ending shifting square shape
+
+;shifting rectangle shape
+
 shift_right_horizontal_rectangle_shape:
 
     mov ax, finish_col_screen_r
     cmp finish_col_rec_h, ax
-    js square_can_move_right
+    js horizontal_rectangle_can_move_right
 
     jmp shift_right_done
 
@@ -457,6 +512,7 @@ horizontal_rectangle_can_move_right:
 
     jmp shift_right_done
 
+; ending shifting rectangle shape
 
 shift_right_done:
     ret
@@ -473,6 +529,8 @@ shift_left_shape proc
     jz shift_left_horizontal_rectangle_shape
 
     jmp shift_left_done
+
+; shifting square shape
 
 shift_left_square_shape:
 
@@ -496,6 +554,9 @@ square_can_move_left:
     call fall_delay
 
     jmp shift_left_done
+; ending shifting square shape
+
+; shifting horizontal rectangle shape
 
 shift_left_horizontal_rectangle_shape:
 
@@ -520,10 +581,18 @@ horizontal_rectangle_can_move__left:
 
     jmp shift_left_done
 
+; ending shifting horizontal rectnagle
+
 shift_left_done:
 
     ret
     endp shift_left_shape
+
+;********************************************************************************
+quick_shift_down proc
+
+    ret
+    endp quick_shift_down
 
 ;********************************************************************************
 
