@@ -39,12 +39,12 @@ title (exe) Graphics System calls
     finish_col_rec_v dw ?
 
     ; T-shape up-part
-    start_col_t_up dw 100
+    start_col_t_up dw 150
     start_row_t_up dw 0
     finish_col_t_up dw ?
     finish_row_t_up dw ?
     ; T-shape down-part
-    start_col_t_down dw 85
+    start_col_t_down dw 135
     start_row_t_down dw 15
     finish_col_t_down dw ?
     finish_row_t_down dw ?
@@ -270,7 +270,6 @@ endp check_input
 
 ;***********************************************************************************
 shape_initialization proc
-
 
 square_initialize:
     mov start_col_sq, 150
@@ -533,16 +532,27 @@ endp shift_down_shape
 ;********************************************************************************
 shape_can_move_down proc
 
+    cmp shape_number, 3
+    jz can_t_shape_move_down
+
     mov ax, current_row_screen
     add ax, block_size
     mov current_row_screen, ax
     cmp current_row_screen, 180 ; has reached down
-    jnz shape_can_move_down_done:
+    js shape_can_move_down_done:
     jz has_reached_down
 
 has_reached_down:
     call next_shape
     jmp shape_can_move_down_done
+
+can_t_shape_move_down:
+    mov ax, current_row_screen
+    add ax, block_size
+    mov current_row_screen, ax
+    cmp current_row_screen, 165 ; has reached down
+    jnz shape_can_move_down_done:
+    jz has_reached_down    
 
 shape_can_move_down_done:
     ret
@@ -556,6 +566,9 @@ shift_right_shape proc
 
     cmp shape_number, 2
     jz shift_right_horizontal_rectangle_shape
+
+    cmp shape_number, 3
+    jz shift_right_t_shape
 
     jmp shift_right_done
 
@@ -614,6 +627,35 @@ horizontal_rectangle_can_move_right:
 
 ; ending shifting rectangle shape
 
+
+shift_right_t_shape:
+
+    mov ax, finish_col_screen_r
+    cmp finish_col_t_down, ax
+    js t_shape_can_move_right
+
+    jmp shift_right_done
+
+t_shape_can_move_right:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_col_t_up
+    add dx, block_size
+    mov start_col_t_up, dx
+
+    mov dx, start_col_t_down
+    add dx, block_size
+    mov start_col_t_down, dx
+
+    mov color, 13
+    call draw_shape
+    call fall_delay
+
+    jmp shift_right_done
+
+
 shift_right_done:
     ret
     endp shift_right_shape
@@ -627,6 +669,9 @@ shift_left_shape proc
 
     cmp shape_number, 2
     jz shift_left_horizontal_rectangle_shape
+
+    cmp shape_number, 3
+    jz shift_left_t_shape
 
     jmp shift_left_done
 
@@ -682,6 +727,32 @@ horizontal_rectangle_can_move__left:
     jmp shift_left_done
 
 ; ending shifting horizontal rectnagle
+
+shift_left_t_shape:
+    mov ax, finish_col_screen_l
+    cmp ax, start_col_t_down
+    js t_shape_can_move_left
+
+    jmp shift_left_done
+
+t_shape_can_move_left:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_col_t_down
+    sub dx, block_size
+    mov start_col_t_down, dx
+
+    
+    mov dx, start_col_t_up
+    sub dx, block_size
+    mov start_col_t_up, dx
+
+    mov color, 13
+    call draw_shape
+    call fall_delay
+
+    jmp shift_left_done
 
 shift_left_done:
 
