@@ -48,7 +48,21 @@ title (exe) Graphics System calls
     start_row_t_down dw 15
     finish_col_t_down dw ?
     finish_row_t_down dw ?
-    
+
+    ; L-shape right-part
+    start_col_l_right dw 100
+    start_row_l_right dw 30
+    finish_col_l_right dw ?
+    finish_row_l_right dw ?
+
+    ; L-shape left-part
+    start_col_l_left dw 85
+    start_row_l_left dw 0
+    finish_col_l_left dw ?
+    finish_row_l_left dw ?
+
+
+
 
     ; Score dispalyed.
     init_score dw '0'    
@@ -290,7 +304,7 @@ next_shape proc
 
     inc shape_number
     call shape_initialization
-    cmp shape_number, 4
+    cmp shape_number, 5
     jz shape_reset
 
     jmp next_shape_done
@@ -313,6 +327,12 @@ draw_shape proc
 
     cmp shape_number, 3
     jz t_shape
+
+    cmp shape_number, 4
+    jz l_shape
+
+    cmp shape_number, 5
+    jz ll_shape
 
     jmp draw_shape_done
 
@@ -447,6 +467,69 @@ t_loop4:
 
     jmp draw_shape_done
 
+;-----------------------------------  
+l_shape:
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_l_right
+    add dx, block_size
+    mov finish_row_l_right, dx
+
+    mov dx, start_col_l_right
+    add dx, block_size
+    mov finish_col_l_right, dx
+
+    
+    mov dx, start_row_l_right
+    
+l_loop1:
+    mov cx, start_col_l_right
+    
+l_loop2:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_l_right
+    JNZ l_loop2
+    
+    INC dx
+    CMP dx, finish_row_l_right
+    JNZ l_loop1  
+
+; left-part
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_l_left
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov finish_row_l_left, dx
+
+    mov dx, start_col_l_left
+    add dx, block_size
+    mov finish_col_l_left, dx
+
+    
+    mov dx, start_row_l_left
+    
+l_loop3:
+    mov cx, start_col_l_left
+    
+l_loop4:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_l_left
+    JNZ l_loop4
+    
+    INC dx
+    CMP dx, finish_row_l_left
+    JNZ l_loop3  
+
+    jmp draw_shape_done
+;-----------------------------------                 
+ll_shape:
+
 ;-----------------------------------                 
 
 
@@ -466,6 +549,9 @@ shift_down_shape proc
 
     cmp shape_number, 3
     jz shift_down_t_shape
+
+    cmp shape_number, 4
+    jz shift_down_l_shape
 
     jmp shift_down_done
 
@@ -525,6 +611,29 @@ shift_down_t_shape:
 
 
 ;---------------------------
+shift_down_l_shape:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_l_right
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov start_row_l_right, dx
+    
+    mov dx, start_row_l_left
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov start_row_l_left, dx
+
+    mov color, 12  ; set color light red
+    call draw_shape
+    call fall_delay
+
+    jmp shift_down_done
+;---------------------------
+
 shift_down_done:
     ret
 endp shift_down_shape
