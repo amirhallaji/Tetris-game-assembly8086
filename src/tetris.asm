@@ -346,7 +346,7 @@ next_shape proc
 
     inc shape_number
     call shape_initialization
-    cmp shape_number, 7
+    cmp shape_number, 6
     jz shape_reset
 
     jmp next_shape_done
@@ -379,6 +379,15 @@ draw_shape proc
     cmp shape_number, 6
     jz vertical_rectangle_shape
 
+    cmp shape_number, 7
+    jz t_shape_90
+
+    cmp shape_number, 8
+    jz l_shape_90
+
+    cmp shape_number, 9
+    jz ll_shape_90
+    
     jmp draw_shape_done
 
 ;-----------------------------------                 
@@ -545,6 +554,67 @@ t_loop4:
     JNZ t_loop3
 
     jmp draw_shape_done
+;-----------------------------------  
+t_shape_90:
+
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_t_up
+    add dx, block_size
+    mov finish_row_t_up, dx
+
+    mov dx, start_col_t_up
+    add dx, block_size
+    mov finish_col_t_up, dx
+
+    
+    mov dx, start_row_t_up
+    
+t_loop1_90:
+    mov cx, start_col_t_up
+    
+t_loop2_90:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_t_up
+    JNZ t_loop2_90
+    
+    INC dx
+    CMP dx, finish_row_t_up
+    JNZ t_loop1_90
+;*******
+; down part 
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_t_down
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+
+    mov finish_row_t_down, dx
+
+    mov dx, start_col_t_down
+    add dx, block_size
+    mov finish_col_t_down, dx
+
+    mov dx, start_row_t_down
+    
+t_loop3_90:
+    mov cx, start_col_t_down
+    
+t_loop4_90:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_t_down
+    JNZ t_loop4_90
+    
+    INC dx
+    CMP dx, finish_row_t_down
+    JNZ t_loop3_90
+
+    jmp draw_shape_done
 
 ;-----------------------------------  
 l_shape:
@@ -606,6 +676,66 @@ l_loop4:
     JNZ l_loop3  
 
     jmp draw_shape_done
+
+;-----------------------------------                 
+l_shape_90:
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_l_right
+    add dx, block_size
+    mov finish_row_l_right, dx
+
+    mov dx, start_col_l_right
+    add dx, block_size
+    mov finish_col_l_right, dx
+    
+    mov dx, start_row_l_right
+    
+l_loop1_90:
+    mov cx, start_col_l_right
+    
+l_loop2_90:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_l_right
+    JNZ l_loop2_90
+    
+    INC dx
+    CMP dx, finish_row_l_right
+    JNZ l_loop1_90  
+
+; left-part
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_l_left
+    add dx, block_size
+    mov finish_row_l_left, dx
+
+    mov dx, start_col_l_left
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov finish_col_l_left, dx
+
+    mov dx, start_row_l_left
+    
+l_loop3_90:
+    mov cx, start_col_l_left
+    
+l_loop4_90:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_l_left
+    JNZ l_loop4_90
+    
+    INC dx
+    CMP dx, finish_row_l_left
+    JNZ l_loop3_90 
+
+    jmp draw_shape_done
+
 ;-----------------------------------                 
 ll_shape:
     mov AH, 0ch                 
@@ -668,7 +798,67 @@ ll_loop4:
     jmp draw_shape_done
 
 ;-----------------------------------                 
+ll_shape_90:
+    mov AH, 0ch                 
+    mov al, color
 
+    mov dx, start_row_ll_right
+    add dx, block_size
+    mov finish_row_ll_right, dx
+
+    mov dx, start_col_ll_right
+    add dx, block_size
+    add dx, block_size
+    mov finish_col_ll_right, dx
+
+    
+    mov dx, start_row_ll_right
+    
+ll_loop1_90:
+    mov cx, start_col_ll_right
+    
+ll_loop2_90:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_ll_right
+    JNZ ll_loop2_90
+    
+    INC dx
+    CMP dx, finish_row_ll_right
+    JNZ ll_loop1_90 
+
+; left-part
+    mov AH, 0ch                 
+    mov al, color
+
+    mov dx, start_row_ll_left
+    add dx, block_size
+    mov finish_row_ll_left, dx
+
+    mov dx, start_col_ll_left
+    add dx, block_size
+    add dx, block_size
+    mov finish_col_ll_left, dx
+
+    
+    mov dx, start_row_ll_left
+    
+ll_loop3_90:
+    mov cx, start_col_ll_left
+    
+ll_loop4_90:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_ll_left
+    JNZ ll_loop4_90
+    
+    INC dx
+    CMP dx, finish_row_ll_left
+    JNZ ll_loop3_90  
+
+    jmp draw_shape_done
+
+;-----------------------------------                 
 
 draw_shape_done:    
     ret
@@ -820,7 +1010,6 @@ shift_down_l_shape_90:
 
     jmp shift_down_done
 
-
 ;---------------------------
 shift_down_ll_shape:
     mov color, 0
@@ -861,11 +1050,27 @@ shape_can_move_down proc
     cmp shape_number, 3
     jz can_t_shape_move_down
 
+    cmp shape_number, 7
+    jz can_t_shape_move_down
+
+    ;----------
+
     cmp shape_number, 4
     jz can_l_shape_move_down
 
+    cmp shape_number, 8
+    jz can_l_shape_move_down
+
+    ;----------
+
     cmp shape_number, 5
     jz can_ll_shape_move_down
+
+    cmp shape_number, 9
+    jz can_ll_shape_move_down
+
+    
+    ;----------
 
     mov bx, current_row_screen
     add bx, block_size
