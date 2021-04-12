@@ -232,7 +232,7 @@ border_loop2:
     ret
     endp draw_border
 
-;***********************************************************************************
+;*******************************************************************************
 
 procedure_read_character proc
 
@@ -295,6 +295,7 @@ s_key_pressed:
     jmp check_input_done
 
 w_key_pressed: ;Todo
+    call rotate_shape
     jmp check_input_done
 
 
@@ -345,7 +346,7 @@ next_shape proc
 
     inc shape_number
     call shape_initialization
-    cmp shape_number, 6
+    cmp shape_number, 7
     jz shape_reset
 
     jmp next_shape_done
@@ -374,6 +375,9 @@ draw_shape proc
 
     cmp shape_number, 5
     jz ll_shape
+
+    cmp shape_number, 6
+    jz vertical_rectangle_shape
 
     jmp draw_shape_done
 
@@ -409,7 +413,8 @@ sq_loop2:
 
     jmp draw_shape_done
 
-;-----------------------------------                 
+;-----------------------------------  
+               
 
 horizontal_rectangle_shape:
 
@@ -445,6 +450,39 @@ rec_h_loop2:
 
     jmp draw_shape_done
 
+;-----------------------------------  
+vertical_rectangle_shape:
+    mov ah, 0ch
+    mov al, color
+
+    mov dx, start_row_rec_h
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    add dx, block_size
+    mov finish_row_rec_h, dx
+
+    mov dx, start_col_rec_h
+    add dx, block_size
+    mov finish_col_rec_h, dx
+
+    
+    mov dx, start_row_rec_h
+    
+rec_v_loop1:
+    mov cx, start_col_rec_h
+    
+rec_v_loop2:
+    INT 10h
+    INC cx
+    CMP cx, finish_col_rec_h
+    JNZ rec_v_loop2
+    
+    INC dx
+    CMP dx, finish_row_rec_h
+    JNZ rec_v_loop1
+
+    jmp draw_shape_done
 ;-----------------------------------                 
 
 t_shape:
@@ -637,6 +675,30 @@ draw_shape_done:
 endp draw_shape
 
 ;********************************************************************************
+rotate_shape proc
+
+    cmp shape_number, 2 ; horizontal -> vertical
+    jz shift_down_vertical_rectangle_shape
+    jmp rotate_shape_done
+
+    cmp shape_number, 3
+    jz shift_down_t_shape_90
+    jmp rotate_shape_done
+
+    cmp shape_number, 4
+    jz shift_down_l_shape_90
+    jmp rotate_shape_done
+
+    cmp shape_number, 5
+    jz shift_down_ll_shape_90
+    jmp shift_down_done
+
+
+rotate_shape_done:
+    ret
+    endp rotate_shape
+;********************************************************************************
+
 
 shift_down_shape proc
 
@@ -677,6 +739,7 @@ shift_down_square_shape:
 
 shift_down_horizontal_rectangle_shape:
 
+
     mov color, 0
     call draw_shape
 
@@ -687,6 +750,15 @@ shift_down_horizontal_rectangle_shape:
     mov color, 9  ; set color blue
     call draw_shape
     call fall_delay
+
+    jmp shift_down_done
+
+shift_down_vertical_rectangle_shape:
+    mov color, 0
+    call draw_shape
+    mov shape_number, 6
+    jmp shift_down_horizontal_rectangle_shape
+    mov shape_number, 3
 
     jmp shift_down_done
 
@@ -711,8 +783,16 @@ shift_down_t_shape:
 
     jmp shift_down_done
 
+shift_down_t_shape_90:
+    mov color, 0
+    call draw_shape
+    mov shape_number, 7
+    jmp shift_down_t_shape
+    mov shape_number, 4
 
-;---------------------------
+    jmp shift_down_done
+
+;--------------------------
 shift_down_l_shape:
     mov color, 0
     call draw_shape
@@ -730,6 +810,17 @@ shift_down_l_shape:
     call fall_delay
 
     jmp shift_down_done
+
+shift_down_l_shape_90:
+    mov color, 0
+    call draw_shape
+    mov shape_number, 8
+    jmp shift_down_l_shape
+    mov shape_number, 5
+
+    jmp shift_down_done
+
+
 ;---------------------------
 shift_down_ll_shape:
     mov color, 0
@@ -748,6 +839,16 @@ shift_down_ll_shape:
     call fall_delay
 
     jmp shift_down_done
+
+shift_down_ll_shape_90:
+    mov color, 0
+    call draw_shape
+    mov shape_number, 9
+    jmp shift_down_ll_shape
+    mov shape_number, 1
+
+    jmp shift_down_done
+
 ;---------------------------
 
 shift_down_done:
@@ -764,11 +865,11 @@ shape_can_move_down proc
     jz can_l_shape_move_down
 
     cmp shape_number, 5
-    jz  can_ll_shape_move_down
+    jz can_ll_shape_move_down
 
-    mov ax, current_row_screen
-    add ax, block_size
-    mov current_row_screen, ax
+    mov bx, current_row_screen
+    add bx, block_size
+    mov current_row_screen, bx
     cmp current_row_screen, 180 ; has reached down
     js shape_can_move_down_done:
     jz has_reached_down
@@ -778,25 +879,25 @@ has_reached_down:
     jmp shape_can_move_down_done
 
 can_t_shape_move_down:
-    mov ax, current_row_screen
-    add ax, block_size
-    mov current_row_screen, ax
+    mov bx, current_row_screen
+    add bx, block_size
+    mov current_row_screen, bx
     cmp current_row_screen, 165 ; has reached down
     jnz shape_can_move_down_done:
     jz has_reached_down 
 
 can_l_shape_move_down:   
-    mov ax, current_row_screen
-    add ax, block_size
-    mov current_row_screen, ax
+    mov bx, current_row_screen
+    add bx, block_size
+    mov current_row_screen, bx
     cmp current_row_screen, 150 ; has reached down
     jnz shape_can_move_down_done:
     jz has_reached_down 
 
 can_ll_shape_move_down:
-    mov ax, current_row_screen
-    add ax, block_size
-    mov current_row_screen, ax
+    mov bx, current_row_screen
+    add bx, block_size
+    mov current_row_screen, bx
     cmp current_row_screen, 150 ; has reached down
     jnz shape_can_move_down_done:
     jz has_reached_down 
@@ -1018,11 +1119,11 @@ shift_left_horizontal_rectangle_shape:
 
     mov ax, finish_col_screen_l
     cmp ax, start_col_rec_h
-    js horizontal_rectangle_can_move__left
+    js horizontal_rectangle_can_move_left
 
     jmp shift_left_done
 
-horizontal_rectangle_can_move__left:
+horizontal_rectangle_can_move_left:
 
     mov color, 0
     call draw_shape
