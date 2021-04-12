@@ -274,6 +274,12 @@ check_input proc
     cmp al, 'S'
     je s_key_pressed
 
+    cmp al, 'W'
+    je w_key_pressed
+
+    cmp al, 'w'
+    je w_key_pressed
+
     jnz check_input_done
 
 d_key_pressed:
@@ -286,6 +292,9 @@ l_key_pressed:
 
 s_key_pressed:
     call quick_shift_down
+    jmp check_input_done
+
+w_key_pressed: ;Todo
     jmp check_input_done
 
 
