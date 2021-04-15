@@ -883,7 +883,6 @@ rotate_shape proc
     jz shift_down_ll_shape_90
     jmp shift_down_done
 
-
 rotate_shape_done:
     ret
     endp rotate_shape
@@ -1499,7 +1498,7 @@ quick_shift_down_rectangle:
 
     mov start_row_rec_h, dx
 
-    mov color, 13
+    mov color, 9
     call draw_shape
     call fall_delay
 
