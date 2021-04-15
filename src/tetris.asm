@@ -946,6 +946,7 @@ shift_down_horizontal_rectangle_shape:
 shift_down_vertical_rectangle_shape:
     mov color, 0
     call draw_shape
+
     mov shape_number, 6
     jmp shift_down_horizontal_rectangle_shape
     mov shape_number, 3
@@ -974,8 +975,10 @@ shift_down_t_shape:
     jmp shift_down_done
 
 shift_down_t_shape_90:
+
     mov color, 0
     call draw_shape
+    
     mov shape_number, 7
     jmp shift_down_t_shape
     mov shape_number, 4
@@ -1438,6 +1441,20 @@ quick_shift_down proc
     cmp shape_number, 1
     jz quick_shift_down_square
 
+    cmp shape_number, 2
+    jz quick_shift_down_rectangle
+
+    cmp shape_number, 3
+    jz quick_shift_down_t
+
+    cmp shape_number, 4
+    jz quick_shift_down_l
+    
+    cmp shape_number, 5
+    jz quick_shift_down_ll
+
+    jmp quick_shift_down_done
+
 quick_shift_down_square:
 
     mov color, 0
@@ -1460,8 +1477,158 @@ quick_shift_down_square:
     call draw_shape
     call fall_delay
 
+    jmp quick_shift_down_done
+
+;----------------------
+
+quick_shift_down_rectangle:
+
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_rec_h
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_rec_h, dx
+
+    mov color, 13
+    call draw_shape
+    call fall_delay
+
+    jmp quick_shift_down_done
+
+;----------------------
+
+quick_shift_down_t:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_t_down
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_t_down, dx
+
+    
+    mov dx, start_row_t_up
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_t_up, dx
 
 
+    mov color, 13
+    call draw_shape
+    call fall_delay
+
+    jmp quick_shift_down_done
+
+;----------------------
+quick_shift_down_l:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_l_left
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_l_left, dx
+
+
+    mov dx, start_row_l_right
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_l_right, dx
+
+    
+    mov color, 12
+    call draw_shape
+    call fall_delay
+
+    jmp quick_shift_down_done
+
+
+;----------------------
+
+quick_shift_down_ll:
+    mov color, 0
+    call draw_shape
+
+    mov dx, start_row_ll_left
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_ll_left, dx
+
+    
+    mov dx, start_row_ll_right
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    add dx, block_size
+    mov current_row_screen, dx
+
+    mov start_row_ll_right, dx
+
+    
+    mov color, 10
+    call draw_shape
+    call fall_delay
+
+    jmp quick_shift_down_done
+
+;----------------------
+
+
+quick_shift_down_done:
     ret
     endp quick_shift_down
 
